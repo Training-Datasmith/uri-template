@@ -80,7 +80,7 @@ final class UriTemplate
      */
     public static function expand(string $template, array $variables): string
     {
-        if (false === \strpos($template, '{')) {
+        if (!str_contains($template, '{')) {
             return $template;
         }
 
@@ -244,7 +244,6 @@ final class UriTemplate
 
         if (isset(self::$operatorHash[$expression[0]])) {
             $result['operator'] = $expression[0];
-            /** @var string */
             $expression = \substr($expression, 1);
         } else {
             $result['operator'] = '';
@@ -258,7 +257,7 @@ final class UriTemplate
                 $varspec['value'] = (string) \substr($value, 0, $colonPos);
                 $varspec['modifier'] = ':';
                 $varspec['position'] = (int) \substr($value, $colonPos + 1);
-            } elseif (\substr($value, -1) === '*') {
+            } elseif (str_ends_with($value, '*')) {
                 $varspec['modifier'] = '*';
                 $varspec['value'] = (string) \substr($value, 0, -1);
             } else {
