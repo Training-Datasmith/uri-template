@@ -1,78 +1,27 @@
 <?php
 
-declare(strict_types=1);
-
-namespace GuzzleHttp\UriTemplate;
+declare (strict_types=1);
+namespace Guzzle_Http\Uri_Template;
 
 /**
  * Expands URI templates. Userland implementation of PECL uri_template.
  *
  * @see https://datatracker.ietf.org/doc/html/rfc6570
  */
-final class UriTemplate
+final class Uri_Template
 {
     /**
      * @var array<string, array{prefix:string, joiner:string, query:bool}> Hash for quick operator lookups
      */
-    private static $operatorHash = [
-        '' => ['prefix' => '', 'joiner' => ',', 'query' => false],
-        '+' => ['prefix' => '', 'joiner' => ',', 'query' => false],
-        '#' => ['prefix' => '#', 'joiner' => ',', 'query' => false],
-        '.' => ['prefix' => '.', 'joiner' => '.', 'query' => false],
-        '/' => ['prefix' => '/', 'joiner' => '/', 'query' => false],
-        ';' => ['prefix' => ';', 'joiner' => ';', 'query' => true],
-        '?' => ['prefix' => '?', 'joiner' => '&', 'query' => true],
-        '&' => ['prefix' => '&', 'joiner' => '&', 'query' => true],
-    ];
-
+    private static $operator_hash = ['' => ['prefix' => '', 'joiner' => ',', 'query' => false], '+' => ['prefix' => '', 'joiner' => ',', 'query' => false], '#' => ['prefix' => '#', 'joiner' => ',', 'query' => false], '.' => ['prefix' => '.', 'joiner' => '.', 'query' => false], '/' => ['prefix' => '/', 'joiner' => '/', 'query' => false], ';' => ['prefix' => ';', 'joiner' => ';', 'query' => true], '?' => ['prefix' => '?', 'joiner' => '&', 'query' => true], '&' => ['prefix' => '&', 'joiner' => '&', 'query' => true]];
     /**
      * @var string[] Delimiters
      */
-    private static $delims = [
-        ':',
-        '/',
-        '?',
-        '#',
-        '[',
-        ']',
-        '@',
-        '!',
-        '$',
-        '&',
-        '\'',
-        '(',
-        ')',
-        '*',
-        '+',
-        ',',
-        ';',
-        '=',
-    ];
-
+    private static $delims = [':', '/', '?', '#', '[', ']', '@', '!', '$', '&', '\'', '(', ')', '*', '+', ',', ';', '='];
     /**
      * @var string[] Percent encoded delimiters
      */
-    private static $delimsPct = [
-        '%3A',
-        '%2F',
-        '%3F',
-        '%23',
-        '%5B',
-        '%5D',
-        '%40',
-        '%21',
-        '%24',
-        '%26',
-        '%27',
-        '%28',
-        '%29',
-        '%2A',
-        '%2B',
-        '%2C',
-        '%3B',
-        '%3D',
-    ];
-
+    private static $delims_pct = ['%3A', '%2F', '%3F', '%23', '%5B', '%5D', '%40', '%21', '%24', '%26', '%27', '%28', '%29', '%2A', '%2B', '%2C', '%3B', '%3D'];
     /**
      * @param array<string,mixed> $variables Variables to use in the template expansion
      *
@@ -83,33 +32,24 @@ final class UriTemplate
         if (!str_contains($template, '{')) {
             return $template;
         }
-
         /** @var string|null */
-        $result = \preg_replace_callback(
-            '/\{([^\}]+)\}/',
-            self::expandMatchCallback($variables),
-            $template
-        );
-
+        $result = \preg_replace_callback('/\{([^\}]+)\}/', self::expand_match_callback($variables), $template);
         if (null === $result) {
             throw new \RuntimeException(\sprintf('Unable to process template: %s', \preg_last_error_msg()));
         }
-
         return $result;
     }
-
     /**
      * @param array<string,mixed> $variables Variables to use in the template expansion
      *
      * @return callable(string[]): string
      */
-    private static function expandMatchCallback(array $variables): callable
+    private static function expand_match_callback(array $variables): callable
     {
         return static function (array $matches) use ($variables): string {
-            return self::expandMatch($matches, $variables);
+            return self::expand_match($matches, $variables);
         };
     }
-
     /**
      * Process an expansion
      *
@@ -118,71 +58,64 @@ final class UriTemplate
      *
      * @return string Returns the replacement string
      */
-    private static function expandMatch(array $matches, array $variables): string
+    private static function expand_match(array $matches, array $variables): string
     {
         $replacements = [];
-        $parsed = self::parseExpression($matches[1]);
-        $prefix = self::$operatorHash[$parsed['operator']]['prefix'];
-        $joiner = self::$operatorHash[$parsed['operator']]['joiner'];
-        $useQuery = self::$operatorHash[$parsed['operator']]['query'];
-        $allUndefined = true;
-
+        $parsed = self::parse_expression($matches[1]);
+        $prefix = self::$operator_hash[$parsed['operator']]['prefix'];
+        $joiner = self::$operator_hash[$parsed['operator']]['joiner'];
+        $use_query = self::$operator_hash[$parsed['operator']]['query'];
+        $all_undefined = true;
         foreach ($parsed['values'] as $value) {
             if (!isset($variables[$value['value']])) {
                 continue;
             }
-
             $variable = $variables[$value['value']];
-            $actuallyUseQuery = $useQuery;
+            $actually_use_query = $use_query;
             $expanded = '';
-
             if (\is_array($variable)) {
-                $isAssoc = self::isAssoc($variable);
+                $is_assoc = self::is_assoc($variable);
                 $kvp = [];
                 /** @var mixed $var */
                 foreach ($variable as $key => $var) {
-                    if ($isAssoc) {
+                    if ($is_assoc) {
                         $key = \rawurlencode((string) $key);
-                        $isNestedArray = \is_array($var);
+                        $is_nested_array = \is_array($var);
                     } else {
-                        $isNestedArray = false;
+                        $is_nested_array = false;
                     }
-
-                    if (!$isNestedArray) {
+                    if (!$is_nested_array) {
                         $var = \rawurlencode((string) $var);
                         if ($parsed['operator'] === '+' || $parsed['operator'] === '#') {
-                            $var = self::decodeReserved($var);
+                            $var = self::decode_reserved($var);
                         }
                     }
-
                     if ($value['modifier'] === '*') {
-                        if ($isAssoc) {
-                            if ($isNestedArray) {
+                        if ($is_assoc) {
+                            if ($is_nested_array) {
                                 // Nested arrays must allow for deeply nested structures.
                                 $var = \http_build_query([$key => $var], '', '&', \PHP_QUERY_RFC3986);
                             } else {
                                 $var = \sprintf('%s=%s', (string) $key, (string) $var);
                             }
-                        } elseif ($key > 0 && $actuallyUseQuery) {
+                        } elseif ($key > 0 && $actually_use_query) {
                             $var = \sprintf('%s=%s', $value['value'], (string) $var);
                         }
                     }
-
                     /** @var string $var */
                     $kvp[$key] = $var;
                 }
-
                 if (0 === \count($variable)) {
-                    $actuallyUseQuery = false;
+                    $actually_use_query = false;
                 } elseif ($value['modifier'] === '*') {
                     $expanded = \implode($joiner, $kvp);
-                    if ($isAssoc) {
+                    if ($is_assoc) {
                         // Don't prepend the value name when using the explode
                         // modifier with an associative array.
-                        $actuallyUseQuery = false;
+                        $actually_use_query = false;
                     }
                 } else {
-                    if ($isAssoc) {
+                    if ($is_assoc) {
                         // When an associative array is encountered and the
                         // explode modifier is not set, then the result must be
                         // a comma separated list of keys followed by their
@@ -194,43 +127,35 @@ final class UriTemplate
                     $expanded = \implode(',', $kvp);
                 }
             } else {
-                $allUndefined = false;
+                $all_undefined = false;
                 if ($value['modifier'] === ':' && isset($value['position'])) {
                     $variable = \substr((string) $variable, 0, $value['position']);
                 }
                 $expanded = \rawurlencode((string) $variable);
                 if ($parsed['operator'] === '+' || $parsed['operator'] === '#') {
-                    $expanded = self::decodeReserved($expanded);
+                    $expanded = self::decode_reserved($expanded);
                 }
             }
-
-            if ($actuallyUseQuery) {
+            if ($actually_use_query) {
                 if ($expanded === '' && $joiner !== '&') {
                     $expanded = $value['value'];
                 } else {
                     $expanded = \sprintf('%s=%s', $value['value'], $expanded);
                 }
             }
-
             $replacements[] = $expanded;
         }
-
         $ret = \implode($joiner, $replacements);
-
         if ('' === $ret) {
             // Spec section 3.2.4 and 3.2.5
-            if (false === $allUndefined && ('#' === $prefix || '.' === $prefix)) {
+            if (false === $all_undefined && ('#' === $prefix || '.' === $prefix)) {
                 return $prefix;
             }
-        } else {
-            if ('' !== $prefix) {
-                return \sprintf('%s%s', $prefix, $ret);
-            }
+        } else if ('' !== $prefix) {
+            return \sprintf('%s%s', $prefix, $ret);
         }
-
         return $ret;
     }
-
     /**
      * Parse an expression into parts
      *
@@ -238,25 +163,23 @@ final class UriTemplate
      *
      * @return array{operator:string, values:array<array{value:string, modifier:(''|'*'|':'), position?:int}>}
      */
-    private static function parseExpression(string $expression): array
+    private static function parse_expression(string $expression): array
     {
         $result = [];
-
-        if (isset(self::$operatorHash[$expression[0]])) {
+        if (isset(self::$operator_hash[$expression[0]])) {
             $result['operator'] = $expression[0];
             $expression = \substr($expression, 1);
         } else {
             $result['operator'] = '';
         }
-
         $result['values'] = [];
         foreach (\explode(',', $expression) as $value) {
             $value = \trim($value);
             $varspec = [];
-            if ($colonPos = \strpos($value, ':')) {
-                $varspec['value'] = (string) \substr($value, 0, $colonPos);
+            if ($colon_pos = \strpos($value, ':')) {
+                $varspec['value'] = (string) \substr($value, 0, $colon_pos);
                 $varspec['modifier'] = ':';
-                $varspec['position'] = (int) \substr($value, $colonPos + 1);
+                $varspec['position'] = (int) \substr($value, $colon_pos + 1);
             } elseif (str_ends_with($value, '*')) {
                 $varspec['modifier'] = '*';
                 $varspec['value'] = (string) \substr($value, 0, -1);
@@ -266,10 +189,8 @@ final class UriTemplate
             }
             $result['values'][] = $varspec;
         }
-
         return $result;
     }
-
     /**
      * Determines if an array is associative.
      *
@@ -278,17 +199,16 @@ final class UriTemplate
      * should work in almost every case where input is supplied for a URI
      * template.
      */
-    private static function isAssoc(array $array): bool
+    private static function is_assoc(array $array): bool
     {
         return $array && \array_keys($array)[0] !== 0;
     }
-
     /**
      * Removes percent encoding on reserved characters (used with + and #
      * modifiers).
      */
-    private static function decodeReserved(string $string): string
+    private static function decode_reserved(string $string): string
     {
-        return \str_replace(self::$delimsPct, self::$delims, $string);
+        return \str_replace(self::$delims_pct, self::$delims, $string);
     }
 }
