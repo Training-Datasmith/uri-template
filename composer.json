@@ -42,7 +42,7 @@
         }
     ],
     "require": {
-        "php" : "^7.2.5 || ^8.0",
+        "php": "^7.2.5 || ^8.0",
         "symfony/polyfill-php80": "^1.24"
     },
     "require-dev": {
@@ -52,12 +52,12 @@
     },
     "autoload": {
         "psr-4": {
-            "GuzzleHttp\\UriTemplate\\": "src"
+            "Guzzle_Http\\Uri_Template\\": "src"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "GuzzleHttp\\UriTemplate\\Tests\\": "tests"
+            "Guzzle_Http\\Uri_Template\\Tests\\": "tests"
         }
     },
     "extra": {
