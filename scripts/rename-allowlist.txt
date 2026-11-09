@@ -1,0 +1,6 @@
+# file|Class::method — third-party / reflection calls only
+tests/Uri_Template_Test.php|PHPUnit\Framework\TestCase::assertSame
+tests/Uri_Template_Test.php|PHPUnit\Framework\TestCase::assertContains
+tests/Uri_Template_Test.php|ReflectionClass::getMethod
+tests/Uri_Template_Test.php|ReflectionMethod::setAccessible
+tests/Uri_Template_Test.php|ReflectionMethod::invokeArgs

@@ -1,5 +1,9 @@
 test:
-	php vendor/bin/phpunit tests/ --colors=always
+	php scripts/check-apt-policy.php
+	php scripts/check-no-display-errors.php
+	php scripts/check-rename.php
+	php scripts/check-cluster-pins.php
+	php -d error_reporting=32767 vendor/bin/phpunit --colors=never --do-not-cache-result
 
 static: static-phpstan static-psalm static-codestyle-check
 

@@ -2,17 +2,17 @@
 
 declare(strict_types=1);
 
-namespace GuzzleHttp\UriTemplate\Tests;
+namespace Guzzle_Http\Uri_Template\Tests;
 
-use GuzzleHttp\UriTemplate\UriTemplate;
+use Guzzle_Http\Uri_Template\Uri_Template;
 use PHPUnit\Framework\TestCase;
 
 /**
- * @covers \GuzzleHttp\UriTemplate\UriTemplate
+ * @covers \Guzzle_Http\Uri_Template\Uri_Template
  */
-final class UriTemplateTest extends TestCase
+final class Uri_Template_Test extends TestCase
 {
-    public static function templateProvider(): array
+    public static function template_provider(): array
     {
         $variables = [
             'var' => 'value',
@@ -109,24 +109,21 @@ final class UriTemplateTest extends TestCase
             ['{.null,var}',        '.value'],
             ['X{.empty_keys*}',     'X'],
             ['X{.empty_keys}',      'X'],
-            // Test that missing expansions are skipped
             ['test{&missing*}',     'test'],
-            // Test that multiple expansions can be set
             ['http://{var}/{var:2}{?keys*}', 'http://value/va?semi=%3B&dot=.&comma=%2C'],
-            // Test more complex query string stuff
             ['http://www.test.com{+path}{?var,keys*}', 'http://www.test.com/foo/bar?var=value&semi=%3B&dot=.&comma=%2C'],
         ]);
     }
 
     /**
-     * @dataProvider templateProvider
+     * @dataProvider template_provider
      */
-    public function testExpandsUriTemplates(string $template, string $expansion, array $variables): void
+    public function test_expands_uri_templates(string $template, string $expansion, array $variables): void
     {
-        self::assertSame($expansion, UriTemplate::expand($template, $variables));
+        self::assertSame($expansion, Uri_Template::expand($template, $variables));
     }
 
-    public static function expressionProvider(): array
+    public static function expression_provider(): array
     {
         return [
             [
@@ -161,15 +158,15 @@ final class UriTemplateTest extends TestCase
     }
 
     /**
-     * @dataProvider expressionProvider
+     * @dataProvider expression_provider
      */
-    public function testParsesExpressions(string $exp, array $data): void
+    public function test_parses_expressions(string $exp, array $data): void
     {
-        $template = new UriTemplate();
+        $template = new Uri_Template();
 
         $class = new \ReflectionClass($template);
 
-        $method = $class->getMethod('parseExpression');
+        $method = $class->getMethod('parse_expression');
 
         if (PHP_VERSION_ID < 80100) {
             $method->setAccessible(true);
@@ -183,9 +180,9 @@ final class UriTemplateTest extends TestCase
     /**
      * @ticket https://github.com/guzzle/guzzle/issues/90
      */
-    public function testAllowsNestedArrayExpansion(): void
+    public function test_allows_nested_array_expansion(): void
     {
-        $result = UriTemplate::expand('http://example.com{+path}{/segments}{?query,data*,foo*}', [
+        $result = Uri_Template::expand('http://example.com{+path}{/segments}{?query,data*,foo*}', [
             'path' => '/foo/bar',
             'segments' => ['one', 'two'],
             'query' => 'test',
@@ -204,24 +201,24 @@ final class UriTemplateTest extends TestCase
         self::assertSame('http://example.com/foo/bar/one,two?query=test&more%5B0%5D=fun&more%5B1%5D=ice%20cream&baz%5Bbar%5D=fizz&baz%5Btest%5D=buzz&bam=boo', $result);
     }
 
-    public static function specComplianceProvider(): \Generator
+    public static function spec_compliance_provider(): \Generator
     {
         foreach (['spec-examples.json', 'spec-examples-by-section.json', 'extended-tests.json'] as $filename) {
-            foreach (self::parseSpecExamples($filename) as $example) {
+            foreach (self::parse_spec_examples($filename) as $example) {
                 yield $example;
             }
         }
     }
 
     /**
-     * @dataProvider specComplianceProvider
+     * @dataProvider spec_compliance_provider
      */
-    public function testSpecCompliance(string $template, array $expansions, array $variables): void
+    public function test_spec_compliance(string $template, array $expansions, array $variables): void
     {
-        self::assertContains(UriTemplate::expand($template, $variables), $expansions);
+        self::assertContains(Uri_Template::expand($template, $variables), $expansions);
     }
 
-    private static function parseSpecExamples(string $filename): \Generator
+    private static function parse_spec_examples(string $filename): \Generator
     {
         $examples = \file_get_contents(\sprintf('%s/../vendor/uri-template/tests/%s', __DIR__, $filename));
 

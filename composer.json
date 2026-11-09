@@ -30,6 +30,11 @@
     ],
     "repositories": [
         {
+            "type": "composer",
+            "url": "https://raw.githubusercontent.com/Training-Datasmith/composer-index/remote-test-2026-11-09",
+            "canonical": false
+        },
+        {
             "type": "package",
             "package": {
                 "name": "uri-template/tests",
@@ -47,7 +52,7 @@
     },
     "require-dev": {
         "bamarni/composer-bin-plugin": "^1.8.2",
-        "phpunit/phpunit": "^8.5.44 || ^9.6.25",
+        "phpunit/phpunit": "^8.5.52 || ^9.6.33",
         "uri-template/tests": "1.0.0"
     },
     "autoload": {
@@ -65,6 +70,15 @@
             "bin-links": true,
             "forward-command": false
         }
+    },
+    "scripts": {
+        "test": [
+            "@php scripts/check-apt-policy.php",
+            "@php scripts/check-no-display-errors.php",
+            "@php scripts/check-rename.php",
+            "@php scripts/check-cluster-pins.php",
+            "php -d error_reporting=32767 vendor/bin/phpunit --colors=never --do-not-cache-result"
+        ]
     },
     "config": {
         "allow-plugins": {
